@@ -1,9 +1,11 @@
+import { API_KEY } from './config';
+
 // KassalApiService.js
 const BASE_URL = 'https://kassal.app/api/v1';
 
 // Option 1: Environment variable approach
 // Import from environment variables configuration file
-import { API_KEY } from './config';
+
 
 class KassalApiService {
   static #apiKey = API_KEY;
