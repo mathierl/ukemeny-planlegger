@@ -1,9 +1,12 @@
-// Enhanced MenuManager.js
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import UkemenyDatabase from './LocalStorageService';
-import { FiSave, FiList, FiX, FiCheck, FiCalendar, FiTrash2, FiInfo, FiLoader } from 'react-icons/fi';
+import { useUkemeny } from './UkemenyContext';
+import { FiSave, FiList, FiX, FiCheck, FiCalendar, FiTrash2, FiInfo, FiLoader, FiClock, FiEye } from 'react-icons/fi';
 
-function MenuManager({ meals, budget, onLoadMenu }) {
+function MenuManager() {
+  const { valgteMaaltider, budsjett, handleLoadMenu } = useUkemeny();
+  
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [showMenuList, setShowMenuList] = useState(false);
   const [menuName, setMenuName] = useState('');
@@ -42,7 +45,7 @@ function MenuManager({ meals, budget, onLoadMenu }) {
       return;
     }
     
-    if (meals.length === 0) {
+    if (valgteMaaltider.length === 0) {
       setErrorMessage('The menu is empty. Please add some recipes first.');
       return;
     }
@@ -50,12 +53,15 @@ function MenuManager({ meals, budget, onLoadMenu }) {
     try {
       setIsLoading(true);
       
+      // Filter out null values for storage
+      const cleanedMeals = valgteMaaltider.filter(meal => meal !== null);
+      
       const menuData = {
         name: menuName,
         description: menuDescription,
-        budget: budget,
-        meals: meals,
-        totalPrice: calculateTotalPrice(meals)
+        budget: budsjett,
+        meals: cleanedMeals,
+        totalPrice: calculateTotalPrice(cleanedMeals)
       };
       
       db.saveMenu(menuData);
@@ -96,6 +102,8 @@ function MenuManager({ meals, budget, onLoadMenu }) {
   // Calculate total price of all meals
   const calculateTotalPrice = (mealList) => {
     return mealList.reduce((total, meal) => {
+      if (!meal) return total; // Skip null entries
+      
       const mealPrice = meal.ingredienser.reduce((sum, ingredient) => sum + ingredient.pris, 0);
       return total + mealPrice;
     }, 0);
@@ -108,8 +116,8 @@ function MenuManager({ meals, budget, onLoadMenu }) {
       const menu = db.getMenuById(id);
       setIsLoading(false);
       
-      if (onLoadMenu && typeof onLoadMenu === 'function') {
-        onLoadMenu(menu.meals, menu.budget);
+      if (handleLoadMenu && typeof handleLoadMenu === 'function') {
+        handleLoadMenu(menu.meals, menu.budget);
         setShowMenuList(false);
         
         // Show success message
@@ -260,7 +268,7 @@ function MenuManager({ meals, budget, onLoadMenu }) {
                       Antall måltider
                     </span>
                     <span className="text-lg font-bold text-indigo-700">
-                      {meals.length}
+                      {valgteMaaltider.filter(meal => meal !== null).length}
                     </span>
                   </div>
                 </div>
@@ -273,7 +281,7 @@ function MenuManager({ meals, budget, onLoadMenu }) {
                       Budsjett
                     </span>
                     <span className="text-lg font-bold text-blue-700">
-                      {budget} kr
+                      {budsjett} kr
                     </span>
                   </div>
                 </div>
@@ -322,9 +330,10 @@ function MenuManager({ meals, budget, onLoadMenu }) {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+              <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
                 {savedMenus.map(menu => (
                   <div key={menu.id} className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow overflow-hidden">
+                    {/* Menu header with description */}
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
                       <div className="flex justify-between items-start">
                         <div>
@@ -371,20 +380,45 @@ function MenuManager({ meals, budget, onLoadMenu }) {
                       </div>
                     </div>
                     
-                    <div className="px-4 py-2 grid grid-cols-4 gap-1 bg-white">
+                    {/* Recipe cards with images */}
+                    <div className="bg-white p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                       {menu.meals.slice(0, 4).map((meal, index) => (
-                        <div key={index} className="text-center">
-                          <div className="h-6 w-6 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-1 text-xs text-gray-600">
-                            {index + 1}
+                        <div key={index} className="flex items-stretch border border-gray-100 rounded-lg overflow-hidden hover:shadow-sm transition">
+                          {/* Recipe image */}
+                          <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center">
+                            {meal.bilde ? (
+                              <img 
+                                src={meal.bilde} 
+                                alt={meal.navn} 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-white text-xl">🍲</span>
+                            )}
                           </div>
-                          <div className="truncate text-xs text-gray-600" title={meal.navn}>
-                            {meal.navn}
+                          
+                          {/* Recipe info */}
+                          <div className="flex-grow p-2">
+                            <h5 className="font-medium text-sm text-gray-800 line-clamp-1">{meal.navn}</h5>
+                            <div className="flex justify-between items-center mt-1">
+                              <div className="flex items-center text-xs text-gray-500">
+                                <FiClock size={10} className="mr-1" />
+                                <span className="truncate max-w-[80px]">{meal.tidsbruk}</span>
+                              </div>
+                              <span className="text-xs font-medium text-indigo-600">
+                                {meal.ingredienser.reduce((sum, i) => sum + i.pris, 0)} kr
+                              </span>
+                            </div>
                           </div>
                         </div>
                       ))}
+                      
                       {menu.meals.length > 4 && (
-                        <div className="text-center col-span-4 mt-1">
-                          <span className="text-xs text-blue-600">+ {menu.meals.length - 4} flere måltider</span>
+                        <div className="flex items-center justify-center p-3 border border-dashed border-gray-200 rounded-lg col-span-full">
+                          <div className="flex items-center text-blue-600">
+                            <FiEye size={14} className="mr-1" />
+                            <span className="text-sm">+ {menu.meals.length - 4} flere måltider</span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -395,8 +429,6 @@ function MenuManager({ meals, budget, onLoadMenu }) {
           </div>
         )}
       </div>
-      
-      
     </div>
   );
 }

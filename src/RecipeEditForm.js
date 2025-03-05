@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { FiPlus, FiChevronDown, FiChevronUp, FiSearch, FiX } from 'react-icons/fi';
+import { FiSave, FiX, FiPlus, FiSearch, FiChevronUp } from 'react-icons/fi';
 import ProductSearch from './ProductSearch';
 
-function RecipeForm({ onAddRecipe, onCancel, initialRecipe = null }) {
-  const [navn, setNavn] = useState(initialRecipe?.navn || '');
-  const [tidsbruk, setTidsbruk] = useState(initialRecipe?.tidsbruk || '');
-  const [vanskelighetsgrad, setVanskelighetsgrad] = useState(initialRecipe?.vanskelighetsgrad || 'Enkel');
+const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
+  const [navn, setNavn] = useState(recipe.navn || '');
+  const [tidsbruk, setTidsbruk] = useState(recipe.tidsbruk || '');
+  const [vanskelighetsgrad, setVanskelighetsgrad] = useState(recipe.vanskelighetsgrad || 'Enkel');
   const [bilde, setBilde] = useState(null);
-  const [bildePreview, setBildePreview] = useState(initialRecipe?.bilde || '');
-  const [ingredienser, setIngredienser] = useState(initialRecipe?.ingredienser || [{ navn: '', mengde: '', pris: 0 }]);
-  const [fremgangsmaate, setFremgangsmaate] = useState(initialRecipe?.fremgangsmaate || ['']);
-  const [allergener, setAllergener] = useState(initialRecipe?.allergener || []);
+  const [bildePreview, setBildePreview] = useState(recipe.bilde || '');
+  const [ingredienser, setIngredienser] = useState(recipe.ingredienser || [{ navn: '', mengde: '', pris: 0 }]);
+  const [fremgangsmaate, setFremgangsmaate] = useState(recipe.fremgangsmaate || ['']);
+  const [allergener, setAllergener] = useState(recipe.allergener || []);
   const [dragActive, setDragActive] = useState(false);
-  const [showProductSearch, setShowProductSearch] = useState(Array(ingredienser.length).fill(false));
+  const [showProductSearch, setShowProductSearch] = useState(Array(recipe.ingredienser?.length || 1).fill(false));
 
   // Handle image upload
   const handleBildeChange = (e) => {
@@ -129,7 +129,7 @@ function RecipeForm({ onAddRecipe, onCancel, initialRecipe = null }) {
 
   // Calculate total price
   const calculateTotalPrice = () => {
-    return ingredienser.reduce((sum, ing) => sum + ing.pris, 0);
+    return ingredienser.reduce((sum, ing) => sum + parseFloat(ing.pris || 0), 0);
   };
 
   // Remove image
@@ -158,26 +158,34 @@ function RecipeForm({ onAddRecipe, onCancel, initialRecipe = null }) {
       return;
     }
 
-    // Create recipe object
-    const newRecipe = {
-      id: initialRecipe?.id || Date.now(),
+    // Create updated recipe object
+    const updatedRecipe = {
+      ...recipe,
       navn,
       tidsbruk,
       vanskelighetsgrad,
-      bilde: bildePreview || null,
+      bilde: bildePreview || recipe.bilde, // Keep original if no new image
       ingredienser: ingredienser.filter(ing => ing.navn.trim()),
       fremgangsmaate: fremgangsmaate.filter(step => step.trim()),
       allergener
     };
 
-    onAddRecipe(newRecipe);
+    onSave(updatedRecipe);
   };
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 text-white">
-        <h2 className="text-2xl font-bold">{initialRecipe ? 'Rediger Oppskrift' : 'Ny Oppskrift'}</h2>
-        <p className="text-purple-100">{initialRecipe ? 'Oppdater oppskriften' : 'Legg til en ny oppskrift i din samling'}</p>
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Rediger Oppskrift</h2>
+          <p className="text-indigo-100">Oppdater oppskriften</p>
+        </div>
+        <button 
+          onClick={onCancel}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full p-2 transition"
+        >
+          <FiX size={24} />
+        </button>
       </div>
       
       <form onSubmit={handleSubmit}>
@@ -465,13 +473,16 @@ function RecipeForm({ onAddRecipe, onCancel, initialRecipe = null }) {
               type="submit" 
               className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition"
             >
-              {initialRecipe ? 'Oppdater oppskrift' : 'Lagre oppskrift'}
+              <div className="flex items-center justify-center">
+                <FiSave className="mr-2" size={18} />
+                Lagre endringer
+              </div>
             </button>
           </div>
         </div>
       </form>
     </div>
   );
-}
+};
 
-export default RecipeForm;
+export default RecipeEditForm;
