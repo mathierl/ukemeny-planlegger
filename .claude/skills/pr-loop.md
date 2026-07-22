@@ -19,7 +19,12 @@ If the project documents none of this, ask the user to confirm before starting. 
 
 1. Per-item pipeline
 
-For each work item:
+For each work item that has a Linear ticket ID (e.g. UKE-2):
+
+Lock the ticket before doing anything else. Run:
+   python3 scripts/linear.py lock <TICKET-ID>
+
+This assigns the ticket to you and moves it to an in-progress state in Linear, and fails loudly if the ticket is already in progress or done — which is the "only one agent per ticket" guarantee. If this command fails or exits non-zero, STOP immediately and tell the user; do not proceed with implementation. If the work item has no Linear ticket ID (free-text description only), skip this step.
 
 Pre-flight. If the item is ambiguous about scope, acceptance criteria, or approach, STOP and ask the user to clarify before writing any code. (If the grill-me skill is available and the ticket hasn't already been through it, suggest running that first rather than guessing.)
 Ground. Re-read the issue/spec (gh issue view <n> if it's a GitHub issue; otherwise use the text supplied) and the actual code paths it touches before writing anything.
@@ -55,7 +60,7 @@ Merge step — see §2.
 Advance. Update the local default branch, confirm the merge landed, remove stray worktrees. Post a one-line status, then move to the next item.
 2. Merge authority
 
-Default (safe): stop at hand-off. Once both reviews are clean and CI is green, STOP at: "PR open, CI green, both reviews clean (including cross-model) — awaiting human review/merge." Report the PR link and gate status. This is the default unless the project's rules AND the user both explicitly permit otherwise.
+Default (safe): stop at hand-off. Once both reviews are clean and CI is green, STOP at: "PR open, CI green, both reviews clean (including cross-model) — awaiting human review/merge. Once you've merged, run python3 scripts/linear.py done <TICKET-ID> to close out the ticket." Report the PR link and gate status. This is the default unless the project's rules AND the user both explicitly permit otherwise.
 
 Opt-in: autonomous-merge. Only if the user explicitly requests it AND the project permits agent merge — spawn a separate pr-merger agent (a third context) that re-verifies everything before squash-merging. The authoring context never merges its own PR.
 
