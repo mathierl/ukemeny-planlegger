@@ -1,3 +1,5 @@
+Drive one or more work items through a full multi-agent PR pipeline (pre-flight → branch → conflict check → implement → gates → PR → 2 independent reviews, one cross-model → fix every nit → re-review → CI → human merge, or opt-in autonomous merge). Requires GitHub remote, the gh CLI, and the codex CLI.
+
 <!-- Derived from /pr-loop by Surabhi Pradhan (MIT License) https://github.com/surpradhan/claude-code-skills Modified to replace one of the two review subagents with an external, cross-model review via the Codex CLI, so the implementation is never reviewed solely by agents from the same model family as the author. -->
 /pr-loop
 
