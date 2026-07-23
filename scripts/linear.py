@@ -44,26 +44,24 @@ def gql(query, variables=None):
 def get_issue(ticket_id):
     query = """
     query($id: String!) {
-      issues(filter: { identifier: { eq: $id } }) {
-        nodes {
+      issue(id: $id) {
+        id
+        identifier
+        title
+        state { id name type }
+        assignee { id name }
+        team {
           id
-          identifier
-          title
-          state { id name type }
-          assignee { id name }
-          team {
-            id
-            states { nodes { id name type } }
-          }
+          states { nodes { id name type } }
         }
       }
     }
     """
     data = gql(query, {"id": ticket_id})
-    nodes = data["issues"]["nodes"]
-    if not nodes:
+    issue = data.get("issue")
+    if not issue:
         sys.exit(f"No ticket found with identifier {ticket_id}")
-    return nodes[0]
+    return issue
 
 
 def get_viewer_id():
