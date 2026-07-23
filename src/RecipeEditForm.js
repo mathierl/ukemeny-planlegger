@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { FiSave, FiX, FiPlus, FiSearch, FiChevronUp } from 'react-icons/fi';
+import { TbDeviceFloppy, TbX, TbPlus, TbSearch, TbChevronUp, TbClock } from 'react-icons/tb';
 import ProductSearch from './ProductSearch';
 
 const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
   const [navn, setNavn] = useState(recipe.navn || '');
   const [tidsbruk, setTidsbruk] = useState(recipe.tidsbruk || '');
   const [vanskelighetsgrad, setVanskelighetsgrad] = useState(recipe.vanskelighetsgrad || 'Enkel');
-  const [bilde, setBilde] = useState(null);
+  const [, setBilde] = useState(null);
   const [bildePreview, setBildePreview] = useState(recipe.bilde || '');
   const [ingredienser, setIngredienser] = useState(recipe.ingredienser || [{ navn: '', mengde: '', pris: 0 }]);
   const [fremgangsmaate, setFremgangsmaate] = useState(recipe.fremgangsmaate || ['']);
@@ -43,7 +43,7 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       setBilde(file);
@@ -73,7 +73,7 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
     const updatedIngredienser = [...ingredienser];
     updatedIngredienser.splice(index, 1);
     setIngredienser(updatedIngredienser);
-    
+
     const updatedShowSearch = [...showProductSearch];
     updatedShowSearch.splice(index, 1);
     setShowProductSearch(updatedShowSearch);
@@ -101,7 +101,7 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
       }
     };
     setIngredienser(updatedIngredienser);
-    
+
     // Hide the product search
     const updatedShowSearch = [...showProductSearch];
     updatedShowSearch[index] = false;
@@ -141,18 +141,18 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     // Validate inputs
     if (!navn.trim()) {
       alert('Vennligst oppgi et navn for oppskriften');
       return;
     }
-    
+
     if (ingredienser.some(ing => !ing.navn.trim())) {
       alert('Alle ingredienser må ha navn');
       return;
     }
-    
+
     if (fremgangsmaate.some(step => !step.trim())) {
       alert('Alle fremgangsmåtesteg må være utfylt');
       return;
@@ -174,70 +174,68 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white flex justify-between items-center">
+    <div className="bg-white rounded-2xl shadow-md border border-cream-300 overflow-hidden mb-6">
+      <div className="bg-terracotta-500 p-6 text-cream-50 flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Rediger Oppskrift</h2>
-          <p className="text-indigo-100">Oppdater oppskriften</p>
+          <p className="text-cream-100">Oppdater oppskriften</p>
         </div>
-        <button 
+        <button
           onClick={onCancel}
-          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full p-2 transition"
+          className="bg-white/20 hover:bg-white/30 text-cream-50 rounded-full p-2 transition-colors"
         >
-          <FiX size={24} />
+          <TbX size={24} aria-hidden="true" />
         </button>
       </div>
-      
+
       <form onSubmit={handleSubmit}>
         <div className="p-6 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Navn på oppskrift</label>
-            <input 
-              type="text" 
-              className="w-full p-3 border-0 bg-gray-50 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+            <label className="block text-sm font-medium text-charcoal-muted mb-2">Navn på oppskrift</label>
+            <input
+              type="text"
+              className="w-full p-3 border border-cream-300 bg-cream-50 rounded-xl focus:ring-2 focus:ring-terracotta-400 outline-none transition"
               placeholder="Skriv inn navn..."
               value={navn}
               onChange={(e) => setNavn(e.target.value)}
               required
             />
           </div>
-          
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tidsbruk</label>
+              <label className="block text-sm font-medium text-charcoal-muted mb-2">Tidsbruk</label>
               <div className="relative">
-                <input 
-                  type="text" 
-                  className="w-full p-3 pl-10 border-0 bg-gray-50 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                <input
+                  type="text"
+                  className="w-full p-3 pl-10 border border-cream-300 bg-cream-50 rounded-xl focus:ring-2 focus:ring-terracotta-400 outline-none transition"
                   placeholder="F.eks. 20 min"
                   value={tidsbruk}
                   onChange={(e) => setTidsbruk(e.target.value)}
                 />
-                <svg className="absolute left-3 top-3.5 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <TbClock className="absolute left-3 top-3.5 text-charcoal-muted" size={16} aria-hidden="true" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Vanskelighetsgrad</label>
+              <label className="block text-sm font-medium text-charcoal-muted mb-2">Vanskelighetsgrad</label>
               <div className="flex space-x-2">
-                <button 
+                <button
                   type="button"
-                  className={`flex-1 py-3 ${vanskelighetsgrad === 'Enkel' ? 'bg-indigo-600 text-white' : 'bg-gray-50 text-gray-700'} text-sm font-medium rounded-lg hover:bg-indigo-700 hover:text-white transition`}
+                  className={`flex-1 py-3 ${vanskelighetsgrad === 'Enkel' ? 'bg-terracotta-600 text-cream-50' : 'bg-cream-50 text-charcoal-muted'} text-sm font-medium rounded-xl hover:bg-terracotta-600 hover:text-cream-50 transition-colors`}
                   onClick={() => setVanskelighetsgrad('Enkel')}
                 >
                   Enkel
                 </button>
-                <button 
+                <button
                   type="button"
-                  className={`flex-1 py-3 ${vanskelighetsgrad === 'Middels' ? 'bg-indigo-600 text-white' : 'bg-gray-50 text-gray-700'} text-sm font-medium rounded-lg hover:bg-indigo-700 hover:text-white transition`}
+                  className={`flex-1 py-3 ${vanskelighetsgrad === 'Middels' ? 'bg-terracotta-600 text-cream-50' : 'bg-cream-50 text-charcoal-muted'} text-sm font-medium rounded-xl hover:bg-terracotta-600 hover:text-cream-50 transition-colors`}
                   onClick={() => setVanskelighetsgrad('Middels')}
                 >
                   Middels
                 </button>
-                <button 
+                <button
                   type="button"
-                  className={`flex-1 py-3 ${vanskelighetsgrad === 'Avansert' ? 'bg-indigo-600 text-white' : 'bg-gray-50 text-gray-700'} text-sm font-medium rounded-lg hover:bg-indigo-700 hover:text-white transition`}
+                  className={`flex-1 py-3 ${vanskelighetsgrad === 'Avansert' ? 'bg-terracotta-600 text-cream-50' : 'bg-cream-50 text-charcoal-muted'} text-sm font-medium rounded-xl hover:bg-terracotta-600 hover:text-cream-50 transition-colors`}
                   onClick={() => setVanskelighetsgrad('Avansert')}
                 >
                   Avansert
@@ -245,19 +243,19 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Preparation Instructions */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Fremgangsmåte</label>
+            <label className="block text-sm font-medium text-charcoal-muted mb-2">Fremgangsmåte</label>
             <div className="space-y-3">
               {fremgangsmaate.map((steg, index) => (
                 <div key={index} className="flex space-x-3 mb-3 items-start">
-                  <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="flex-shrink-0 w-8 h-8 bg-terracotta-600 rounded-full flex items-center justify-center text-cream-50 font-bold">
                     {index + 1}
                   </div>
                   <div className="flex-grow">
-                    <textarea 
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                    <textarea
+                      className="w-full p-3 border border-cream-300 rounded-xl focus:ring-2 focus:ring-terracotta-400 focus:border-terracotta-400 outline-none transition"
                       rows="2"
                       value={steg}
                       onChange={(e) => updateStep(index, e.target.value)}
@@ -265,32 +263,32 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
                       required
                     ></textarea>
                   </div>
-                  <button 
+                  <button
                     type="button"
                     className="text-red-500 hover:text-red-700 p-1"
                     onClick={() => removeStep(index)}
                   >
-                    ✕
+                    <TbX size={18} aria-hidden="true" />
                   </button>
                 </div>
               ))}
-              
-              <button 
-                type="button" 
-                className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center"
+
+              <button
+                type="button"
+                className="text-sm text-terracotta-600 hover:text-terracotta-800 flex items-center"
                 onClick={addStep}
               >
-                <FiPlus className="mr-1" size={16} />
+                <TbPlus className="mr-1" size={16} aria-hidden="true" />
                 Legg til steg
               </button>
             </div>
           </div>
-          
+
           {/* Image Upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Bilde</label>
-            <div 
-              className={`border-2 border-dashed ${dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-indigo-500'} rounded-lg p-8 text-center transition cursor-pointer`}
+            <label className="block text-sm font-medium text-charcoal-muted mb-2">Bilde</label>
+            <div
+              className={`border-2 border-dashed ${dragActive ? 'border-terracotta-500 bg-terracotta-50' : 'border-cream-400 hover:border-terracotta-400'} rounded-xl p-8 text-center transition-colors cursor-pointer`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
@@ -299,35 +297,35 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
               {!bildePreview ? (
                 <>
                   <div className="mb-3">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                    <svg className="mx-auto h-12 w-12 text-charcoal-muted" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
                       <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
-                  <div className="flex text-sm text-gray-600 justify-center">
-                    <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                  <div className="flex text-sm text-charcoal-muted justify-center">
+                    <label className="relative cursor-pointer bg-white rounded-md font-medium text-terracotta-600 hover:text-terracotta-700">
                       <span>Last opp bilde</span>
-                      <input 
-                        type="file" 
-                        className="sr-only" 
+                      <input
+                        type="file"
+                        className="sr-only"
                         accept="image/*"
                         onChange={handleBildeChange}
                       />
                     </label>
                     <p className="pl-1">eller dra og slipp</p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-charcoal-muted mt-2">
                     PNG, JPG, GIF opptil 10MB
                   </p>
                 </>
               ) : (
                 <div className="relative group">
-                  <img 
-                    src={bildePreview} 
-                    alt="Forhandsvisning" 
-                    className="max-h-48 mx-auto rounded-lg" 
+                  <img
+                    src={bildePreview}
+                    alt="Forhandsvisning"
+                    className="max-h-48 mx-auto rounded-xl"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                    <button 
+                  <div className="absolute inset-0 bg-charcoal/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                    <button
                       type="button"
                       onClick={removeBilde}
                       className="bg-red-600 text-white p-1 rounded-full"
@@ -341,84 +339,84 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
               )}
             </div>
           </div>
-          
+
           {/* Ingredients with Product Search */}
           <div>
             <div className="flex justify-between items-center mb-4">
-              <label className="block text-sm font-medium text-gray-700">Ingredienser</label>
-              <button 
-                type="button" 
-                className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center"
+              <label className="block text-sm font-medium text-charcoal-muted">Ingredienser</label>
+              <button
+                type="button"
+                className="text-sm text-terracotta-600 hover:text-terracotta-800 flex items-center"
                 onClick={addIngrediens}
               >
-                <FiPlus className="mr-1" size={16} />
+                <TbPlus className="mr-1" size={16} aria-hidden="true" />
                 Legg til ingrediens
               </button>
             </div>
-            
+
             <div className="space-y-3">
               {ingredienser.map((ingrediens, index) => (
-                <div key={index} className="border border-gray-100 rounded-lg overflow-hidden shadow-sm">
-                  <div className="flex items-center justify-between bg-gray-50 p-2">
-                    <span className="text-xs font-medium text-gray-500">Ingrediens #{index + 1}</span>
+                <div key={index} className="border border-cream-300 rounded-xl overflow-hidden shadow-sm">
+                  <div className="flex items-center justify-between bg-cream-100 p-2">
+                    <span className="text-xs font-medium text-charcoal-muted">Ingrediens #{index + 1}</span>
                     <div className="flex space-x-2">
-                      <button 
+                      <button
                         type="button"
-                        className="text-indigo-600 hover:text-indigo-800 p-1 rounded-full hover:bg-indigo-50"
+                        className="text-terracotta-600 hover:text-terracotta-800 p-1 rounded-full hover:bg-terracotta-50"
                         title={showProductSearch[index] ? "Skjul produktsøk" : "Søk etter produkt i Kassal API"}
                         onClick={() => toggleProductSearch(index)}
                       >
-                        {showProductSearch[index] ? <FiChevronUp size={16} /> : <FiSearch size={16} />}
+                        {showProductSearch[index] ? <TbChevronUp size={16} aria-hidden="true" /> : <TbSearch size={16} aria-hidden="true" />}
                       </button>
-                      <button 
+                      <button
                         type="button"
                         className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
                         onClick={() => removeIngrediens(index)}
                       >
-                        <FiX size={16} />
+                        <TbX size={16} aria-hidden="true" />
                       </button>
                     </div>
                   </div>
-                  
+
                   {showProductSearch[index] && (
-                    <div className="p-3 border-b border-gray-100 bg-blue-50">
-                      <p className="text-xs text-blue-800 mb-2">
-                        Søk etter produkt i Kassal API for å få riktig pris 
+                    <div className="p-3 border-b border-cream-300 bg-terracotta-50">
+                      <p className="text-xs text-terracotta-800 mb-2">
+                        Søk etter produkt i Kassal API for å få riktig pris
                       </p>
-                      <ProductSearch 
+                      <ProductSearch
                         onSelectProduct={(product) => handleSelectProduct(index, product)}
                         initialValue={ingrediens.navn}
                       />
                     </div>
                   )}
-                  
-                  <div className="flex items-center p-3">
-                    <div className="flex-grow pr-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Navn</label>
-                      <input 
-                        type="text" 
-                        className="w-full p-2 border border-gray-200 rounded outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+
+                  <div className="flex flex-col sm:flex-row sm:items-center p-3 gap-3 sm:gap-2">
+                    <div className="flex-grow sm:pr-2">
+                      <label className="block text-xs font-medium text-charcoal-muted mb-1">Navn</label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border border-cream-300 rounded-lg outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-terracotta-400"
                         value={ingrediens.navn}
                         onChange={(e) => updateIngrediens(index, 'navn', e.target.value)}
                         placeholder="Ingrediensnavn"
                         required
                       />
                     </div>
-                    <div className="w-24 px-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Mengde</label>
-                      <input 
-                        type="text" 
-                        className="w-full p-2 border border-gray-200 rounded outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    <div className="sm:w-24">
+                      <label className="block text-xs font-medium text-charcoal-muted mb-1">Mengde</label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border border-cream-300 rounded-lg outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-terracotta-400"
                         value={ingrediens.mengde}
                         onChange={(e) => updateIngrediens(index, 'mengde', e.target.value)}
                         placeholder="Mengde"
                       />
                     </div>
-                    <div className="w-24">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Pris (kr)</label>
-                      <input 
-                        type="number" 
-                        className="w-full p-2 border border-gray-200 rounded outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    <div className="sm:w-24">
+                      <label className="block text-xs font-medium text-charcoal-muted mb-1">Pris (kr)</label>
+                      <input
+                        type="number"
+                        className="w-full p-2 border border-cream-300 rounded-lg outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-terracotta-400"
                         value={ingrediens.pris}
                         onChange={(e) => updateIngrediens(index, 'pris', e.target.value)}
                         placeholder="Pris"
@@ -426,14 +424,14 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
                       />
                     </div>
                   </div>
-                  
+
                   {ingrediens.productInfo && (
-                    <div className="bg-indigo-50 p-2 text-xs border-t border-indigo-100">
+                    <div className="bg-terracotta-50 p-2 text-xs border-t border-terracotta-100">
                       <div className="flex justify-between">
-                        <span className="text-indigo-800">
+                        <span className="text-terracotta-800">
                           {ingrediens.productInfo.brand || 'Ukjent merke'}
                         </span>
-                        <span className="text-indigo-600">
+                        <span className="text-terracotta-600">
                           {ingrediens.productInfo.vendor || 'Ukjent leverandør'}
                         </span>
                       </div>
@@ -442,39 +440,39 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
                 </div>
               ))}
             </div>
-            
-            <div className="mt-3 p-3 bg-gray-50 rounded-lg flex justify-between items-center">
-              <span className="text-sm text-gray-700">Total pris:</span>
-              <span className="font-bold text-lg text-indigo-700">{calculateTotalPrice().toFixed(2).replace('.', ',')} kr</span>
+
+            <div className="mt-3 p-3 bg-cream-100 rounded-xl flex justify-between items-center">
+              <span className="text-sm text-charcoal-muted">Total pris:</span>
+              <span className="font-bold text-lg text-terracotta-700">{calculateTotalPrice().toFixed(2).replace('.', ',')} kr</span>
             </div>
           </div>
-          
+
           {/* Allergens field */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Allergener (valgfritt)</label>
-            <input 
-              type="text" 
-              className="w-full p-3 border-0 bg-gray-50 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+            <label className="block text-sm font-medium text-charcoal-muted mb-2">Allergener (valgfritt)</label>
+            <input
+              type="text"
+              className="w-full p-3 border border-cream-300 bg-cream-50 rounded-xl focus:ring-2 focus:ring-terracotta-400 outline-none transition"
               value={allergener.join(', ')}
               onChange={(e) => setAllergener(e.target.value.split(',').map(a => a.trim()).filter(Boolean))}
               placeholder="Angi allergener separert med komma"
             />
           </div>
-          
+
           <div className="pt-4 flex space-x-3">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex-1"
+              className="px-4 py-2 border border-cream-400 rounded-xl text-charcoal hover:bg-cream-100 transition-colors flex-1"
             >
               Avbryt
             </button>
-            <button 
-              type="submit" 
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition"
+            <button
+              type="submit"
+              className="flex-1 bg-terracotta-500 hover:bg-terracotta-600 text-cream-50 py-3 rounded-xl font-medium transition-colors"
             >
               <div className="flex items-center justify-center">
-                <FiSave className="mr-2" size={18} />
+                <TbDeviceFloppy className="mr-2" size={18} aria-hidden="true" />
                 Lagre endringer
               </div>
             </button>

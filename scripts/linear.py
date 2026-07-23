@@ -30,8 +30,12 @@ def gql(query, variables=None):
         headers={"Content-Type": "application/json", "Authorization": api_key},
         method="POST",
     )
-    with urllib.request.urlopen(req) as resp:
-        result = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        sys.exit(f"Linear API returned HTTP {e.code}:\n{error_body}")
     if "errors" in result:
         sys.exit(f"Linear API error: {result['errors']}")
     return result["data"]
@@ -40,26 +44,24 @@ def gql(query, variables=None):
 def get_issue(ticket_id):
     query = """
     query($id: String!) {
-      issues(filter: { identifier: { eq: $id } }) {
-        nodes {
+      issue(id: $id) {
+        id
+        identifier
+        title
+        state { id name type }
+        assignee { id name }
+        team {
           id
-          identifier
-          title
-          state { id name type }
-          assignee { id name }
-          team {
-            id
-            states { nodes { id name type } }
-          }
+          states { nodes { id name type } }
         }
       }
     }
     """
     data = gql(query, {"id": ticket_id})
-    nodes = data["issues"]["nodes"]
-    if not nodes:
+    issue = data.get("issue")
+    if not issue:
         sys.exit(f"No ticket found with identifier {ticket_id}")
-    return nodes[0]
+    return issue
 
 
 def get_viewer_id():

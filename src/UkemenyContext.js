@@ -5,14 +5,16 @@ import RecipeDatabase from './RecipeStorageService';
 export const UkemenyContext = createContext();
 
 export const UkemenyProvider = ({ children }) => {
-  // Initialize recipe database
-  const recipeDb = new RecipeDatabase();
-  
   // State for recipes
   const [oppskrifter, setOppskrifter] = useState([]);
-  
-  // Load recipes on initial mount
+
+  // Load recipes on initial mount. RecipeDatabase is constructed locally here
+  // (not shared/memoized) since it snapshots localStorage at construction
+  // time and addRecipe trusts that snapshot to derive the next ID — a
+  // long-lived shared instance would go stale and could collide IDs or drop
+  // writes made elsewhere (e.g. another tab).
   useEffect(() => {
+    const recipeDb = new RecipeDatabase();
     const storedRecipes = recipeDb.getAllRecipes();
     setOppskrifter(storedRecipes);
   }, []);
@@ -121,6 +123,7 @@ export const UkemenyProvider = ({ children }) => {
   const leggTilOppskrift = (nyOppskrift) => {
     try {
       // Save the new recipe to storage
+      const recipeDb = new RecipeDatabase();
       const savedRecipe = recipeDb.addRecipe(nyOppskrift);
       
       // Update the state with the saved recipe
@@ -138,6 +141,7 @@ export const UkemenyProvider = ({ children }) => {
   const slettOppskrift = (id) => {
     try {
       // Delete from storage
+      const recipeDb = new RecipeDatabase();
       recipeDb.deleteRecipe(id);
       
       // Update state
@@ -160,6 +164,7 @@ export const UkemenyProvider = ({ children }) => {
   const oppdaterOppskrift = (id, oppdatertOppskrift) => {
     try {
       // Update in storage
+      const recipeDb = new RecipeDatabase();
       recipeDb.updateRecipe(id, oppdatertOppskrift);
       
       // Update in state
