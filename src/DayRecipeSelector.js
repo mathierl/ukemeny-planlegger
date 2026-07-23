@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useUkemeny } from './UkemenyContext';
-import { FiX, FiSearch, FiPlus, FiClock } from 'react-icons/fi';
+import { TbX, TbSearch, TbPlus, TbClock, TbSoup } from 'react-icons/tb';
 
 const DayRecipeSelector = ({ dayIndex, dayName, onClose }) => {
   const context = useUkemeny();
-  
-  const { 
-    oppskrifter, 
-    valgteMaaltider, 
-    fjernMaaltid 
+
+  const {
+    oppskrifter,
+    valgteMaaltider,
+    fjernMaaltid
   } = context;
-  
+
   // Direct access to the function, avoiding potential destructuring issues
   const leggTilMaaltidTilDag = context.leggTilMaaltidTilDag;
-  
+
   const [sokeord, setSokeord] = useState('');
   const [filtrerteOppskrifter, setFiltrerteOppskrifter] = useState(oppskrifter);
 
   // Filter recipes based on search term
   useEffect(() => {
-    const filtrerte = oppskrifter.filter(oppskrift => 
+    const filtrerte = oppskrifter.filter(oppskrift =>
       oppskrift.navn.toLowerCase().includes(sokeord.toLowerCase())
     );
     setFiltrerteOppskrifter(filtrerte);
@@ -43,7 +43,7 @@ const DayRecipeSelector = ({ dayIndex, dayName, onClose }) => {
       nyeMaaltider[dayIndex] = recipe;
       context.setValgteMaaltider(nyeMaaltider);
     }
-    
+
     onClose();
   };
 
@@ -54,121 +54,122 @@ const DayRecipeSelector = ({ dayIndex, dayName, onClose }) => {
       onClose();
     }
   };
-  
+
   // Calculate total price of ingredients
   const calculateTotalPrice = (ingredients) => {
     return ingredients.reduce((sum, ingredient) => sum + ingredient.pris, 0);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-screen overflow-hidden">
-        <div className="bg-indigo-600 text-white p-4 flex justify-between items-center">
+    <div className="fixed inset-0 bg-charcoal/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-4xl max-h-screen overflow-hidden">
+        <div className="bg-terracotta-500 text-cream-50 p-4 flex justify-between items-center">
           <h2 className="text-xl font-bold">Velg måltid for {dayName}</h2>
-          <button 
-            className="text-white hover:text-indigo-200 transition"
+          <button
+            className="text-cream-50 hover:text-cream-200 transition-colors"
             onClick={onClose}
           >
-            <FiX size={24} />
+            <TbX size={24} aria-hidden="true" />
           </button>
         </div>
-        
+
         <div className="p-6">
           {/* Current recipe with proper styling */}
           {hasRecipe && (
-            <div className="mb-6 overflow-hidden rounded-lg">
-              <div className="flex overflow-hidden">
-                {/* Image section - stays left aligned */}
-                <div className="w-1/3 h-32 overflow-hidden">
+            <div className="mb-6 overflow-hidden rounded-xl">
+              <div className="flex flex-col sm:flex-row overflow-hidden">
+                {/* Image section */}
+                <div className="w-full sm:w-1/3 h-32 overflow-hidden flex-shrink-0">
                   {currentRecipe.bilde ? (
-                    <img 
-                      src={currentRecipe.bilde} 
-                      alt={currentRecipe.navn} 
+                    <img
+                      src={currentRecipe.bilde}
+                      alt={currentRecipe.navn}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="bg-gradient-to-r from-blue-400 to-indigo-500 w-full h-full flex items-center justify-center">
-                      <span className="text-white text-3xl">🍲</span>
+                    <div className="bg-cream-400 w-full h-full flex items-center justify-center">
+                      <TbSoup size={32} className="text-terracotta-500" aria-hidden="true" />
                     </div>
                   )}
                 </div>
-                
-                {/* Content section - text centered */}
-                <div className="flex-grow bg-indigo-50 p-4 flex flex-col items-center justify-center relative">
-                  <h3 className="text-lg font-semibold text-indigo-800 mb-1 text-center">
+
+                {/* Content section - text centered, button in normal flow (not
+                    absolutely positioned) so it can't overlap the heading on
+                    narrow screens */}
+                <div className="flex-grow bg-cream-100 p-4 flex flex-col items-center justify-center gap-2 text-center">
+                  <h3 className="text-lg font-semibold text-terracotta-700">
                     Nåværende måltid
                   </h3>
-                  <h4 className="font-medium text-lg text-center">{currentRecipe.navn}</h4>
-                  <div className="flex items-center mt-2 text-sm text-gray-600">
-                    <FiClock className="mr-1" size={14} />
+                  <h4 className="font-medium text-lg text-charcoal">{currentRecipe.navn}</h4>
+                  <div className="flex items-center text-sm text-charcoal-muted">
+                    <TbClock className="mr-1" size={14} aria-hidden="true" />
                     {currentRecipe.tidsbruk}
                     <span className="mx-2">•</span>
-                    <span className="font-semibold text-indigo-600">{calculateTotalPrice(currentRecipe.ingredienser)} kr</span>
+                    <span className="font-semibold text-terracotta-600">{calculateTotalPrice(currentRecipe.ingredienser)} kr</span>
                   </div>
-                  
-                  {/* Remove button - positioned absolute right */}
+
                   <button
-                    className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition flex items-center text-sm"
+                    className="mt-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-xl transition-colors flex items-center text-sm"
                     onClick={handleRemoveRecipe}
                   >
-                    <FiX size={14} className="mr-1" />
+                    <TbX size={14} className="mr-1" aria-hidden="true" />
                     Fjern
                   </button>
                 </div>
               </div>
             </div>
           )}
-          
+
           <div className="relative mb-4">
             <input
               type="text"
               placeholder="Søk etter oppskrifter..."
-              className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+              className="w-full p-3 pl-10 border border-cream-400 rounded-xl focus:ring-2 focus:ring-terracotta-400 focus:border-terracotta-400 outline-none transition"
               value={sokeord}
               onChange={(e) => setSokeord(e.target.value)}
             />
-            <FiSearch className="absolute left-3 top-3.5 text-gray-400" size={18} />
+            <TbSearch className="absolute left-3 top-3.5 text-charcoal-muted" size={18} aria-hidden="true" />
           </div>
-          
+
           <div className="overflow-y-auto max-h-96 grid grid-cols-1 md:grid-cols-2 gap-4">
             {filtrerteOppskrifter.length === 0 ? (
-              <div className="col-span-2 text-center py-8 text-gray-500">
+              <div className="col-span-2 text-center py-8 text-charcoal-muted">
                 Ingen oppskrifter funnet. Prøv et annet søkeord.
               </div>
             ) : (
               filtrerteOppskrifter.map(oppskrift => (
-                <div 
-                  key={oppskrift.id} 
-                  className="border border-gray-200 rounded-lg hover:shadow-md transition cursor-pointer hover:border-indigo-300 overflow-hidden flex"
+                <div
+                  key={oppskrift.id}
+                  className="border border-cream-300 rounded-xl hover:shadow-md transition-shadow cursor-pointer hover:border-terracotta-300 overflow-hidden flex"
                   onClick={() => handleSelectRecipe(oppskrift)}
                 >
                   <div className="w-1/3 h-full overflow-hidden">
                     {oppskrift.bilde ? (
-                      <img 
-                        src={oppskrift.bilde} 
-                        alt={oppskrift.navn} 
+                      <img
+                        src={oppskrift.bilde}
+                        alt={oppskrift.navn}
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="bg-gradient-to-r from-blue-400 to-indigo-500 w-full h-full flex items-center justify-center">
-                        <span className="text-white text-3xl">🍲</span>
+                      <div className="bg-cream-400 w-full h-full flex items-center justify-center">
+                        <TbSoup size={32} className="text-terracotta-500" aria-hidden="true" />
                       </div>
                     )}
                   </div>
                   <div className="p-3 flex-grow">
-                    <h3 className="font-medium">{oppskrift.navn}</h3>
-                    <div className="flex items-center mt-1 text-sm text-gray-600">
-                      <FiClock className="mr-1" size={14} />
+                    <h3 className="font-medium text-charcoal">{oppskrift.navn}</h3>
+                    <div className="flex items-center mt-1 text-sm text-charcoal-muted">
+                      <TbClock className="mr-1" size={14} aria-hidden="true" />
                       {oppskrift.tidsbruk}
                       <span className="mx-2">•</span>
-                      <span className="font-semibold text-indigo-600">{calculateTotalPrice(oppskrift.ingredienser)} kr</span>
+                      <span className="font-semibold text-terracotta-600">{calculateTotalPrice(oppskrift.ingredienser)} kr</span>
                     </div>
                     <div className="mt-2 flex justify-between items-center">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-charcoal-muted">
                         {oppskrift.vanskelighetsgrad} • {oppskrift.ingredienser.length} ingredienser
                       </span>
-                      <div className="bg-indigo-100 text-indigo-600 rounded-full p-1">
-                        <FiPlus size={16} />
+                      <div className="bg-terracotta-100 text-terracotta-600 rounded-full p-1">
+                        <TbPlus size={16} aria-hidden="true" />
                       </div>
                     </div>
                   </div>
@@ -177,10 +178,10 @@ const DayRecipeSelector = ({ dayIndex, dayName, onClose }) => {
             )}
           </div>
         </div>
-        
-        <div className="border-t p-4 flex justify-end">
+
+        <div className="border-t border-cream-300 p-4 flex justify-end">
           <button
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+            className="px-4 py-2 border border-cream-400 rounded-xl text-charcoal hover:bg-cream-100 transition-colors"
             onClick={onClose}
           >
             Avbryt
