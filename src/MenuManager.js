@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import UkemenyDatabase from './LocalStorageService';
 import { useUkemeny } from './UkemenyContext';
 import { FiSave, FiList, FiX, FiCheck, FiCalendar, FiTrash2, FiInfo, FiLoader, FiClock, FiEye } from 'react-icons/fi';
@@ -14,13 +14,14 @@ function MenuManager() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Stable across renders so effects/callbacks that depend on it don't re-fire every render
-  const db = useMemo(() => new UkemenyDatabase(), []);
-
-  // Load all saved menus from storage
+  // Load all saved menus from storage. A fresh UkemenyDatabase is created per
+  // call (not memoized) since it snapshots localStorage at construction time
+  // and its write methods trust that snapshot — a long-lived shared instance
+  // would go stale and could clobber writes made elsewhere (e.g. another tab).
   const loadSavedMenus = useCallback(() => {
     try {
       setIsLoading(true);
+      const db = new UkemenyDatabase();
       const menus = db.getAllMenus();
       setSavedMenus(menus);
     } catch (error) {
@@ -29,7 +30,7 @@ function MenuManager() {
     } finally {
       setIsLoading(false);
     }
-  }, [db]);
+  }, []);
 
   // Load saved menus when component mounts or when showMenuList changes
   useEffect(() => {
@@ -64,6 +65,7 @@ function MenuManager() {
         totalPrice: calculateTotalPrice(cleanedMeals)
       };
       
+      const db = new UkemenyDatabase();
       db.saveMenu(menuData);
       setIsLoading(false);
       setShowSaveForm(false);
@@ -113,6 +115,7 @@ function MenuManager() {
   const loadMenu = (id) => {
     try {
       setIsLoading(true);
+      const db = new UkemenyDatabase();
       const menu = db.getMenuById(id);
       setIsLoading(false);
       
@@ -153,6 +156,7 @@ function MenuManager() {
     
     try {
       setIsLoading(true);
+      const db = new UkemenyDatabase();
       db.deleteMenu(id);
       setIsLoading(false);
       loadSavedMenus(); // Reload the list after deletion
