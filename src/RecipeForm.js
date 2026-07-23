@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { FiPlus, FiChevronDown, FiChevronUp, FiSearch, FiX } from 'react-icons/fi';
+import { FiPlus, FiChevronUp, FiSearch, FiX } from 'react-icons/fi';
 import ProductSearch from './ProductSearch';
 
 function RecipeForm({ onAddRecipe, onCancel, initialRecipe = null }) {
   const [navn, setNavn] = useState(initialRecipe?.navn || '');
   const [tidsbruk, setTidsbruk] = useState(initialRecipe?.tidsbruk || '');
   const [vanskelighetsgrad, setVanskelighetsgrad] = useState(initialRecipe?.vanskelighetsgrad || 'Enkel');
-  const [bilde, setBilde] = useState(null);
+  const [, setBilde] = useState(null);
   const [bildePreview, setBildePreview] = useState(initialRecipe?.bilde || '');
   const [ingredienser, setIngredienser] = useState(initialRecipe?.ingredienser || [{ navn: '', mengde: '', pris: 0 }]);
   const [fremgangsmaate, setFremgangsmaate] = useState(initialRecipe?.fremgangsmaate || ['']);
