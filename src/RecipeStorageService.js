@@ -84,7 +84,14 @@ class RecipeDatabase {
       this.localStore = recipes;
     }
   
-    // Add a new recipe
+    // Add a new recipe.
+    // Note: derives the ID from this.localStore rather than re-reading
+    // localStorage, so a recipe added from another tab between construction
+    // and this call can be overwritten / ID-collided with. Pre-existing in
+    // this class (unchanged by the UKE-9 lint fix — the caller has always
+    // constructed a fresh instance per operation, so this isn't a new
+    // regression); a real fix needs cross-tab-safe writes, which is out of
+    // scope here.
     addRecipe(newRecipe) {
       try {
         // Make sure we have a unique ID

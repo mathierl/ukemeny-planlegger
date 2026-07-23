@@ -11,7 +11,14 @@ class UkemenyDatabase {
       return storedData ? JSON.parse(storedData) : [];
     }
   
-    // Save a new menu
+    // Save a new menu.
+    // Note: trusts this.localStore rather than re-reading localStorage, so a
+    // write from another tab between construction and this call is lost.
+    // Pre-existing in this class (unchanged by the UKE-9 lint fix — the
+    // caller has always constructed a fresh instance per operation, so this
+    // isn't a new regression); a real fix needs cross-tab-safe writes
+    // (e.g. a storage-event-based merge or moving IDs to crypto.randomUUID()
+    // with an optimistic-retry write), which is out of scope here.
     saveMenu(menu) {
       try {
         const id = `menu-${Date.now()}`;
