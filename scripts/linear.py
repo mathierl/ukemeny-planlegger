@@ -30,8 +30,12 @@ def gql(query, variables=None):
         headers={"Content-Type": "application/json", "Authorization": api_key},
         method="POST",
     )
-    with urllib.request.urlopen(req) as resp:
-        result = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        sys.exit(f"Linear API returned HTTP {e.code}:\n{error_body}")
     if "errors" in result:
         sys.exit(f"Linear API error: {result['errors']}")
     return result["data"]
