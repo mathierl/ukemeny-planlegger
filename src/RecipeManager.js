@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUkemeny } from './UkemenyContext';
 import RecipeForm from './RecipeForm';
-import { FiSearch, FiPlusCircle, FiChevronDown, FiChevronUp, FiInfo, FiX, FiTrash2, FiEdit, FiCheck } from 'react-icons/fi';
+import { FiSearch, FiPlusCircle, FiInfo, FiX, FiTrash2, FiCheck } from 'react-icons/fi';
 
 const RecipeManager = () => {
   const navigate = useNavigate();

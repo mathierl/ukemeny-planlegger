@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import UkemenyDatabase from './LocalStorageService';
 import { useUkemeny } from './UkemenyContext';
 import { FiSave, FiList, FiX, FiCheck, FiCalendar, FiTrash2, FiInfo, FiLoader, FiClock, FiEye } from 'react-icons/fi';
 
 function MenuManager() {
   const { valgteMaaltider, budsjett, handleLoadMenu } = useUkemeny();
-  
+
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [showMenuList, setShowMenuList] = useState(false);
   const [menuName, setMenuName] = useState('');
@@ -14,18 +13,12 @@ function MenuManager() {
   const [savedMenus, setSavedMenus] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
-  const db = new UkemenyDatabase();
-  
-  // Load saved menus when component mounts or when showMenuList changes
-  useEffect(() => {
-    if (showMenuList) {
-      loadSavedMenus();
-    }
-  }, [showMenuList]);
-  
+
+  // Stable across renders so effects/callbacks that depend on it don't re-fire every render
+  const db = useMemo(() => new UkemenyDatabase(), []);
+
   // Load all saved menus from storage
-  const loadSavedMenus = () => {
+  const loadSavedMenus = useCallback(() => {
     try {
       setIsLoading(true);
       const menus = db.getAllMenus();
@@ -36,7 +29,14 @@ function MenuManager() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [db]);
+
+  // Load saved menus when component mounts or when showMenuList changes
+  useEffect(() => {
+    if (showMenuList) {
+      loadSavedMenus();
+    }
+  }, [showMenuList, loadSavedMenus]);
   
   // Save current menu
   const saveMenu = () => {

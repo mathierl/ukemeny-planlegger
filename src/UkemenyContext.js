@@ -1,21 +1,22 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useMemo } from 'react';
 import RecipeDatabase from './RecipeStorageService';
 
 // Create context
 export const UkemenyContext = createContext();
 
 export const UkemenyProvider = ({ children }) => {
-  // Initialize recipe database
-  const recipeDb = new RecipeDatabase();
-  
+  // Stable across renders so the mount effect below doesn't re-fire on every
+  // provider re-render (it wraps the whole app, so that would otherwise loop)
+  const recipeDb = useMemo(() => new RecipeDatabase(), []);
+
   // State for recipes
   const [oppskrifter, setOppskrifter] = useState([]);
-  
+
   // Load recipes on initial mount
   useEffect(() => {
     const storedRecipes = recipeDb.getAllRecipes();
     setOppskrifter(storedRecipes);
-  }, []);
+  }, [recipeDb]);
   
   // State for selected meals
   const [valgteMaaltider, setValgteMaaltider] = useState([]);

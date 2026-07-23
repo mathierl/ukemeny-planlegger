@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FiSearch, FiX, FiLoader, FiShoppingCart } from 'react-icons/fi';
 import KassalApiService from './KassalApiService';
 
@@ -9,7 +9,32 @@ const ProductSearch = ({ onSelectProduct, initialValue = '' }) => {
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState(null);
   const searchRef = useRef(null);
-  
+
+  // Recreated only when searchTerm changes, so the debounce effect below
+  // doesn't re-fire on every render (e.g. while isLoading toggles)
+  const performSearch = useCallback(async () => {
+    if (!searchTerm.trim()) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await KassalApiService.searchProducts(searchTerm, {
+        unique: true,
+        size: 20,
+        sort: 'price_asc'
+      });
+
+      setSearchResults(result.data || []);
+      setShowResults(true);
+    } catch (err) {
+      setError('Kunne ikke søke etter produkter. Vennligst prøv igjen senere.');
+      console.error('Search error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchTerm]);
+
   // Debounce search to avoid too many API calls
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -21,7 +46,7 @@ const ProductSearch = ({ onSelectProduct, initialValue = '' }) => {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, performSearch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -36,29 +61,6 @@ const ProductSearch = ({ onSelectProduct, initialValue = '' }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [searchRef]);
-
-  const performSearch = async () => {
-    if (!searchTerm.trim()) return;
-
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const result = await KassalApiService.searchProducts(searchTerm, {
-        unique: true,
-        size: 20,
-        sort: 'price_asc'
-      });
-      
-      setSearchResults(result.data || []);
-      setShowResults(true);
-    } catch (err) {
-      setError('Kunne ikke søke etter produkter. Vennligst prøv igjen senere.');
-      console.error('Search error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSelectProduct = (product) => {
     onSelectProduct(product);

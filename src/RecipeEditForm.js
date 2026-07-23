@@ -6,7 +6,7 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
   const [navn, setNavn] = useState(recipe.navn || '');
   const [tidsbruk, setTidsbruk] = useState(recipe.tidsbruk || '');
   const [vanskelighetsgrad, setVanskelighetsgrad] = useState(recipe.vanskelighetsgrad || 'Enkel');
-  const [bilde, setBilde] = useState(null);
+  const [, setBilde] = useState(null);
   const [bildePreview, setBildePreview] = useState(recipe.bilde || '');
   const [ingredienser, setIngredienser] = useState(recipe.ingredienser || [{ navn: '', mengde: '', pris: 0 }]);
   const [fremgangsmaate, setFremgangsmaate] = useState(recipe.fremgangsmaate || ['']);

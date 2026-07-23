@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useUkemeny } from './UkemenyContext';
 import MenuManager from './MenuManager';
-import { FiSearch, FiInfo, FiX, FiPlus } from 'react-icons/fi';
+import { FiInfo, FiPlus } from 'react-icons/fi';
 import DayRecipeSelector from './DayRecipeSelector';
 
 const UkemenyOverview = () => {
-  const { 
-    valgteMaaltider, 
-    fjernMaaltid, 
-    budsjett, 
+  const {
+    valgteMaaltider,
+    fjernMaaltid,
+    budsjett,
     setBudsjett,
-    feilmelding, 
+    feilmelding,
     setFeilmelding,
     beregnTotalPris,
     lagHandleliste,
     velgTilfeldigMåltid,
-    genererUkemeny,
-    handleLoadMenu
+    genererUkemeny
   } = useUkemeny();
 
   const [visBudsjett, setVisBudsjett] = useState(false);
