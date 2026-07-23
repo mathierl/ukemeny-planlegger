@@ -11,7 +11,16 @@ class UkemenyDatabase {
       return storedData ? JSON.parse(storedData) : [];
     }
   
-    // Save a new menu
+    // Save a new menu.
+    // Note: trusts this.localStore rather than re-reading localStorage, so a
+    // write from another tab between construction and this call is lost.
+    // This race predates the UKE-9 lint fix: the caller previously held one
+    // instance per component render (a window from render until the user's
+    // next action), now it constructs one fresh per call (a much narrower,
+    // single-synchronous-call window) — narrower than before, not new. A
+    // real fix needs cross-tab-safe writes (e.g. a storage-event-based merge
+    // or moving IDs to crypto.randomUUID() with an optimistic-retry write),
+    // which is out of scope here.
     saveMenu(menu) {
       try {
         const id = `menu-${Date.now()}`;
