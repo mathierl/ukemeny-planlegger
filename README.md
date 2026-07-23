@@ -26,10 +26,10 @@ npm install --legacy-peer-deps
 The `--legacy-peer-deps` flag is required because of a peer dependency
 mismatch between React 19 and the current `@testing-library/react` version.
 
-Create a `.env` file in the project root with your Kassal API key:
+Copy `.env.example` to `.env` and fill in your Kassal API key:
 
-```
-REACT_APP_KASSAL_API_KEY=your_api_key_here
+```bash
+cp .env.example .env
 ```
 
 This key is required for grocery price lookups (see `src/KassalApiService.js`
