@@ -32,6 +32,7 @@ module.exports = {
           100: '#DCE4C4', // dietary tag background
           200: '#C7D3A5',
           500: '#6B7D46',
+          600: '#62743E',
           700: '#586A36',
           800: '#4A5A32', // dietary tag text
           900: '#37421F',
