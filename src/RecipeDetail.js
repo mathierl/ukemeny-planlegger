@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUkemeny } from './UkemenyContext';
-import { TbClock, TbArrowLeft, TbShoppingCart, TbEdit, TbTrash, TbSoup } from 'react-icons/tb';
+import { TbClock, TbArrowLeft, TbShoppingCart, TbEdit, TbTrash, TbSoup, TbSparkles, TbInfoCircle } from 'react-icons/tb';
 import RecipeEditForm from './RecipeEditForm';
 import DietTags from './DietTags';
 import { parseTag } from './tagUtils';
+import RecipeAIService from './RecipeAIService';
+import { findSimilarRecipesLocally } from './recipeSimilarity';
+import { getCachedSimilar, setCachedSimilar } from './recipeAICache';
 
 const RecipeDetail = () => {
   const { id } = useParams();
@@ -23,6 +26,10 @@ const RecipeDetail = () => {
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [similarRecipes, setSimilarRecipes] = useState([]);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarSource, setSimilarSource] = useState(null); // 'ai' | 'local' | null
+  const [similarMessage, setSimilarMessage] = useState(null);
 
   // Find the recipe in the context
   useEffect(() => {
@@ -36,6 +43,72 @@ const RecipeDetail = () => {
       setFeilmelding('Oppskriften ble ikke funnet. Den kan ha blitt slettet.');
     }
   }, [recipeId, oppskrifter, setFeilmelding]);
+
+  // Find similar recipes: AI first, automatically falling back to local
+  // tag/ingredient scoring on failure, rate limiting, or a missing API key
+  // — this should never just break, only degrade (see UKE-12).
+  useEffect(() => {
+    if (!recipe) return;
+
+    const candidates = oppskrifter.filter(r => r.id !== recipe.id);
+    if (candidates.length === 0) {
+      setSimilarRecipes([]);
+      setSimilarSource(null);
+      setSimilarMessage(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const applyLocalFallback = (message) => {
+      if (cancelled) return;
+      setSimilarMessage(message);
+      setSimilarRecipes(findSimilarRecipesLocally(recipe, candidates));
+      setSimilarSource('local');
+      setSimilarLoading(false);
+    };
+
+    setSimilarLoading(true);
+    setSimilarMessage(null);
+
+    // Reuse a cached AI result if the candidate pool hasn't changed since
+    // it was computed, rather than re-calling the API on every visit
+    const cached = getCachedSimilar(recipe.id, oppskrifter.length);
+    if (cached && cached.source === 'ai') {
+      const byId = new Map(candidates.map(r => [r.id, r]));
+      const resolved = cached.ids.map(id => byId.get(id)).filter(Boolean);
+      if (resolved.length > 0) {
+        setSimilarRecipes(resolved);
+        setSimilarSource('ai');
+        setSimilarLoading(false);
+        return;
+      }
+    }
+
+    if (!RecipeAIService.isConfigured()) {
+      applyLocalFallback(null); // no Groq key set up — not an error, just not configured
+      return;
+    }
+
+    RecipeAIService.getSimilarRecipes(recipe, candidates)
+      .then((results) => {
+        if (cancelled) return;
+        setSimilarRecipes(results);
+        setSimilarSource('ai');
+        setSimilarLoading(false);
+        setCachedSimilar(recipe.id, results.map(r => r.id), oppskrifter.length, 'ai');
+      })
+      .catch((error) => {
+        const message = error.rateLimited
+          ? 'KI-tjenesten har for mange forespørsler akkurat nå. Viser lokale forslag basert på tagger og ingredienser.'
+          : 'KI-tjenesten er utilgjengelig akkurat nå. Viser lokale forslag basert på tagger og ingredienser.';
+        applyLocalFallback(message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [recipe, oppskrifter]);
 
   // Calculate total price
   const calculateTotalPrice = (ingredients) => {
@@ -329,6 +402,58 @@ const RecipeDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Similar recipes — AI first, falls back to local scoring */}
+        {(similarLoading || similarRecipes.length > 0 || similarMessage) && (
+          <div className="mt-6 bg-white rounded-2xl shadow-md border border-cream-300 p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <TbSparkles size={20} className="text-terracotta-500" aria-hidden="true" />
+              <h2 className="text-xl font-bold text-charcoal">Lignende oppskrifter</h2>
+            </div>
+            {similarSource === 'ai' && (
+              <p className="text-xs text-charcoal-muted mb-4">Foreslått av KI</p>
+            )}
+            {similarSource === 'local' && (
+              <p className="text-xs text-charcoal-muted mb-4">Basert på tagger og ingredienser</p>
+            )}
+
+            {similarMessage && (
+              <div className="bg-terracotta-50 border-l-4 border-terracotta-400 text-terracotta-800 p-3 rounded-xl mb-4 flex items-start gap-2 text-sm">
+                <TbInfoCircle size={18} className="flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{similarMessage}</span>
+              </div>
+            )}
+
+            {similarLoading ? (
+              <div className="flex items-center gap-2 text-charcoal-muted py-4">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-terracotta-500"></div>
+                Finner lignende oppskrifter...
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {similarRecipes.map((r) => (
+                  <div
+                    key={r.id}
+                    className="border border-cream-300 rounded-xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/recipes/${r.id}`)}
+                  >
+                    <div className="h-20 bg-cream-400 flex items-center justify-center">
+                      {r.bilde ? (
+                        <img src={r.bilde} alt={r.navn} className="w-full h-full object-cover" />
+                      ) : (
+                        <TbSoup size={24} className="text-terracotta-500" aria-hidden="true" />
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <h3 className="font-medium text-sm text-charcoal line-clamp-1">{r.navn}</h3>
+                      <p className="text-xs text-charcoal-muted mt-1">{r.tidsbruk}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

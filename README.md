@@ -35,6 +35,12 @@ cp .env.example .env
 This key is required for grocery price lookups (see `src/KassalApiService.js`
 and `src/config.js`). Get a key from [kassal.app](https://kassal.app).
 
+Optionally, add a [Groq](https://console.groq.com/keys) API key
+(`REACT_APP_GROQ_API_KEY`) to enable AI-powered "similar recipes" and recipe
+suggestions (see `src/RecipeAIService.js`). This is optional — without it,
+similar recipes falls back to local tag/ingredient similarity scoring, and
+the "suggest a new recipe" feature is hidden.
+
 Then start the dev server:
 
 ```bash
