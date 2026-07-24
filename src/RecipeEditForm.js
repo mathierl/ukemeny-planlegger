@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TbDeviceFloppy, TbX, TbPlus, TbSearch, TbChevronUp, TbClock } from 'react-icons/tb';
 import ProductSearch from './ProductSearch';
+import TagInput from './TagInput';
 
 const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
   const [navn, setNavn] = useState(recipe.navn || '');
@@ -11,6 +12,7 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
   const [ingredienser, setIngredienser] = useState(recipe.ingredienser || [{ navn: '', mengde: '', pris: 0 }]);
   const [fremgangsmaate, setFremgangsmaate] = useState(recipe.fremgangsmaate || ['']);
   const [allergener, setAllergener] = useState(recipe.allergener || []);
+  const [tags, setTags] = useState(recipe.tags || []);
   const [dragActive, setDragActive] = useState(false);
   const [showProductSearch, setShowProductSearch] = useState(Array(recipe.ingredienser?.length || 1).fill(false));
 
@@ -167,7 +169,8 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
       bilde: bildePreview || recipe.bilde, // Keep original if no new image
       ingredienser: ingredienser.filter(ing => ing.navn.trim()),
       fremgangsmaate: fremgangsmaate.filter(step => step.trim()),
-      allergener
+      allergener,
+      tags
     };
 
     onSave(updatedRecipe);
@@ -457,6 +460,12 @@ const RecipeEditForm = ({ recipe, onSave, onCancel }) => {
               onChange={(e) => setAllergener(e.target.value.split(',').map(a => a.trim()).filter(Boolean))}
               placeholder="Angi allergener separert med komma"
             />
+          </div>
+
+          {/* Tags field */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal-muted mb-2">Tagger (valgfritt)</label>
+            <TagInput tags={tags} onChange={setTags} />
           </div>
 
           <div className="pt-4 flex space-x-3">

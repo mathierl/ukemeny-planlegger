@@ -33,7 +33,8 @@ class RecipeDatabase {
               "Kok ris etter anvisning på pakken.",
               "Server kjøttdeiggryta over risen."
             ],
-            allergener: []
+            allergener: [],
+            tags: ["cuisine:Norsk", "mealType:Middag", "prepTime:Under 30 min"]
           },
           {
             id: 2,
@@ -52,7 +53,8 @@ class RecipeDatabase {
               "Bland kikerter med krydder og varm opp.",
               "Server kikertene over de bakte søtpotetene med tahini på topp."
             ],
-            allergener: []
+            allergener: [],
+            tags: ["cuisine:Middelhavs", "mealType:Middag", "prepTime:30-60 min"]
           },
           {
             id: 3,
@@ -71,7 +73,8 @@ class RecipeDatabase {
               "Bland avokado med quinoa.",
               "Press over sitronsaft og server."
             ],
-            allergener: []
+            allergener: [],
+            tags: ["mealType:Lunsj", "prepTime:Under 30 min"]
           }
         ];
       }
