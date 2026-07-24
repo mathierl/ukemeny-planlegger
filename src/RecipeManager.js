@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUkemeny } from './UkemenyContext';
 import RecipeForm from './RecipeForm';
-import { TbSearch, TbCirclePlus, TbInfoCircle, TbX, TbTrash, TbCheck, TbSoup, TbClock } from 'react-icons/tb';
+import { TbSearch, TbCirclePlus, TbInfoCircle, TbX, TbTrash, TbCheck, TbSoup, TbClock, TbAlertTriangle } from 'react-icons/tb';
 import DietTags from './DietTags';
+import { TAG_CATEGORIES, parseTag } from './tagUtils';
 
 const RecipeManager = () => {
   const navigate = useNavigate();
@@ -21,14 +22,42 @@ const RecipeManager = () => {
   const [filtrerteOppskrifter, setFiltrerteOppskrifter] = useState(oppskrifter);
   const [visOppskriftForm, setVisOppskriftForm] = useState(false);
   const [bekrefteSletting, setBekrefteSletting] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [excludedAllergens, setExcludedAllergens] = useState([]);
 
-  // Filter recipes based on search term
+  // Unique tags/allergens across all recipes, for the filter panels below.
+  // Recomputed whenever the recipe list changes rather than memoized: this
+  // list is small (a home cook's own recipes), so the cost is negligible.
+  const availableTags = Array.from(new Set(oppskrifter.flatMap(r => r.tags || [])));
+  const availableAllergens = Array.from(new Set(oppskrifter.flatMap(r => r.allergener || [])));
+  const tagsByCategory = TAG_CATEGORIES
+    .map(cat => ({ ...cat, values: availableTags.filter(t => parseTag(t).category === cat.key) }))
+    .filter(group => group.values.length > 0);
+
+  const toggleTag = (tag) => {
+    setSelectedTags(prev => (prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]));
+  };
+
+  const toggleAllergen = (allergen) => {
+    setExcludedAllergens(prev => (prev.includes(allergen) ? prev.filter(a => a !== allergen) : [...prev, allergen]));
+  };
+
+  const resetFilters = () => {
+    setSelectedTags([]);
+    setExcludedAllergens([]);
+  };
+
+  // Filter recipes based on search term, selected tags (match any), and
+  // excluded allergens (hide recipes containing any of them)
   useEffect(() => {
-    const filtrerte = oppskrifter.filter(oppskrift =>
-      oppskrift.navn.toLowerCase().includes(sokeord.toLowerCase())
-    );
+    const filtrerte = oppskrifter.filter(oppskrift => {
+      const matcherSok = oppskrift.navn.toLowerCase().includes(sokeord.toLowerCase());
+      const matcherTagger = selectedTags.length === 0 || (oppskrift.tags || []).some(t => selectedTags.includes(t));
+      const erAllergivennlig = excludedAllergens.length === 0 || !(oppskrift.allergener || []).some(a => excludedAllergens.includes(a));
+      return matcherSok && matcherTagger && erAllergivennlig;
+    });
     setFiltrerteOppskrifter(filtrerte);
-  }, [sokeord, oppskrifter]);
+  }, [sokeord, oppskrifter, selectedTags, excludedAllergens]);
 
   // Navigate to recipe detail page
   const navigateToRecipe = (id) => {
@@ -163,6 +192,88 @@ const RecipeManager = () => {
             </div>
           </div>
 
+          {/* Allergy-friendly filter — kept visually separate and more
+              prominent than the general tag filter below, since this is
+              safety-relevant rather than just organizational */}
+          {availableAllergens.length > 0 && (
+            <div className="md:col-span-2 lg:col-span-3">
+              <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-6">
+                <h2 className="text-lg font-semibold text-red-800 mb-1 flex items-center gap-2">
+                  <TbAlertTriangle size={20} aria-hidden="true" />
+                  Allergivennlig filter
+                </h2>
+                <p className="text-sm text-red-700 mb-3">
+                  Skjul oppskrifter som inneholder valgte allergener
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {availableAllergens.map((allergen) => {
+                    const isExcluded = excludedAllergens.includes(allergen);
+                    return (
+                      <button
+                        key={allergen}
+                        type="button"
+                        onClick={() => toggleAllergen(allergen)}
+                        className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                          isExcluded
+                            ? 'bg-red-600 text-white border-red-600'
+                            : 'bg-white text-red-700 border-red-300 hover:bg-red-100'
+                        }`}
+                      >
+                        {allergen}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* General tag filter */}
+          {tagsByCategory.length > 0 && (
+            <div className="md:col-span-2 lg:col-span-3">
+              <div className="bg-white border border-cream-300 rounded-2xl p-6 mb-6">
+                <h2 className="text-lg font-semibold text-charcoal mb-3">Filtrer etter tagger</h2>
+                <div className="space-y-3">
+                  {tagsByCategory.map((group) => (
+                    <div key={group.key}>
+                      <span className="text-xs font-medium text-charcoal-muted uppercase tracking-wide">{group.label}</span>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {group.values.map((tag) => {
+                          const { value } = parseTag(tag);
+                          const isSelected = selectedTags.includes(tag);
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => toggleTag(tag)}
+                              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                                isSelected
+                                  ? 'bg-terracotta-600 text-cream-50 border-terracotta-600'
+                                  : 'bg-cream-100 text-charcoal border-cream-300 hover:bg-cream-200'
+                              }`}
+                            >
+                              {value}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+
+                  {(selectedTags.length > 0 || excludedAllergens.length > 0) && (
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="text-sm text-terracotta-600 hover:text-terracotta-800"
+                    >
+                      Nullstill filtre
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Add recipe form */}
           {visOppskriftForm && (
             <div className="md:col-span-2 lg:col-span-3">
@@ -180,7 +291,7 @@ const RecipeManager = () => {
                 Ingen oppskrifter funnet
               </p>
               <p className="text-sm text-charcoal-muted mb-4">
-                Prøv et annet søkeord eller legg til nye oppskrifter
+                Prøv et annet søkeord, juster filtrene, eller legg til nye oppskrifter
               </p>
               <button
                 className="flex items-center mx-auto text-sm bg-terracotta-500 hover:bg-terracotta-600 text-cream-50 px-4 py-2 rounded-xl transition-colors"
@@ -244,6 +355,24 @@ const RecipeManager = () => {
                   </div>
 
                   <DietTags className="mt-2" />
+
+                  {oppskrift.tags && oppskrift.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {oppskrift.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="bg-cream-200 text-charcoal-muted text-xs px-2 py-0.5 rounded-full"
+                        >
+                          {parseTag(tag).value}
+                        </span>
+                      ))}
+                      {oppskrift.tags.length > 3 && (
+                        <span className="text-xs text-charcoal-muted px-1">
+                          +{oppskrift.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex justify-between items-center mt-3">
                     <div className="flex items-center">

@@ -4,6 +4,7 @@ import { useUkemeny } from './UkemenyContext';
 import { TbClock, TbArrowLeft, TbShoppingCart, TbEdit, TbTrash, TbSoup } from 'react-icons/tb';
 import RecipeEditForm from './RecipeEditForm';
 import DietTags from './DietTags';
+import { parseTag } from './tagUtils';
 
 const RecipeDetail = () => {
   const { id } = useParams();
@@ -249,6 +250,22 @@ const RecipeDetail = () => {
                 </div>
               ))}
             </div>
+
+            {recipe.tags && recipe.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {recipe.tags.map((tag) => {
+                  const { label, value } = parseTag(tag);
+                  return (
+                    <span
+                      key={tag}
+                      className="bg-cream-200 text-charcoal text-sm px-3 py-1 rounded-full"
+                    >
+                      <span className="text-charcoal-muted">{label}:</span> {value}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
 
             <button
               className="mt-6 w-full bg-terracotta-500 hover:bg-terracotta-600 text-cream-50 py-3 rounded-xl transition-colors flex items-center justify-center"
